@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Multi Database Dashboard</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Segoe UI;
+}
+
+body{
+height:100vh;
+background:#0f172a;
+overflow:hidden;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+color:white;
+}
+
+/* floating particles */
+
+body::before{
+content:"";
+position:absolute;
+width:200%;
+height:200%;
+background-image:radial-gradient(circle,#00ffff 1px,transparent 1px);
+background-size:50px 50px;
+animation:move 20s linear infinite;
+opacity:0.15;
+}
+
+@keyframes move{
+0%{transform:translate(0,0);}
+100%{transform:translate(-200px,-200px);}
+}
+
+h1{
+font-size:42px;
+margin-bottom:10px;
+z-index:1;
+}
+
+.subtitle{
+margin-bottom:50px;
+opacity:0.8;
+z-index:1;
+}
+
+.container{
+display:flex;
+gap:40px;
+z-index:1;
+}
+
+.card{
+width:230px;
+height:160px;
+border-radius:15px;
+background:rgba(255,255,255,0.05);
+backdrop-filter:blur(10px);
+border:1px solid rgba(255,255,255,0.2);
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+cursor:pointer;
+transition:0.3s;
+box-shadow:0 0 20px rgba(0,255,255,0.2);
+}
+
+.card:hover{
+transform:scale(1.08);
+box-shadow:0 0 40px rgba(0,255,255,0.7);
+}
+
+.icon{
+font-size:45px;
+margin-bottom:10px;
+}
+
+.name{
+font-size:22px;
+font-weight:bold;
+}
+
+#status{
+margin-top:50px;
+font-size:26px;
+color:#00ffae;
+z-index:1;
+}
+
+.loader{
+display:none;
+border:5px solid rgba(255,255,255,0.2);
+border-top:5px solid #00ffae;
+border-radius:50%;
+width:40px;
+height:40px;
+animation:spin 1s linear infinite;
+margin-top:20px;
+}
+
+@keyframes spin{
+0%{transform:rotate(0deg);}
+100%{transform:rotate(360deg);}
+}
+
+.footer{
+position:absolute;
+bottom:20px;
+opacity:0.7;
+font-size:14px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>🚀 Multi Database Server</h1>
+<div class="subtitle">Node.js Database Connectivity Dashboard</div>
+
+<div class="container">
+
+<div class="card" onclick="connectDB('MongoDB')">
+<div class="icon">🍃</div>
+<div class="name">MongoDB</div>
+</div>
+
+<div class="card" onclick="connectDB('MySQL')">
+<div class="icon">🐬</div>
+<div class="name">MySQL</div>
+</div>
+
+<div class="card" onclick="connectDB('SQLite')">
+<div class="icon">📦</div>
+<div class="name">SQLite</div>
+</div>
+
+</div>
+
+<div class="loader" id="loader"></div>
+<div id="status"></div>
+
+<div class="footer">
+Multi Database Node.js Project
+</div>
+
+<script>
+
+function connectDB(db){
+
+document.getElementById("status").innerHTML=""
+document.getElementById("loader").style.display="block"
+
+setTimeout(function(){
+
+document.getElementById("loader").style.display="none"
+
+document.getElementById("status").innerHTML =
+"✅ " + db + " Connected Successfully"
+
+},1200)
+
+}
+
+</script>
+
+</body>
+</html>
