@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Multi Database Dashboard</title>
+<style>
+/* ====== Basic & Animated Background ====== */
+*{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI;}
+body{min-height:100vh;background:#0f172a;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding-top:50px;color:white;}
+body::before{content:"";position:absolute;width:200%;height:200%;background-image:radial-gradient(circle,#00ffff 1px,transparent 1px);background-size:50px 50px;animation:move 20s linear infinite;opacity:0.15;}
+@keyframes move{0%{transform:translate(0,0);}100%{transform:translate(-200px,-200px);}}
+h1{font-size:42px;margin-bottom:10px;z-index:1;}
+.subtitle{margin-bottom:30px;opacity:0.8;z-index:1;}
+
+/* ===== Cards ===== */
+.container{display:flex;gap:40px;z-index:1;margin-bottom:40px;}
+.card{width:230px;height:160px;border-radius:15px;background:rgba(255,255,255,0.05);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:0.3s;box-shadow:0 0 20px rgba(0,255,255,0.2);}
+.card:hover{transform:scale(1.08);box-shadow:0 0 40px rgba(0,255,255,0.7);}
+.icon{font-size:45px;margin-bottom:10px;}
+.name{font-size:22px;font-weight:bold;}
+#status{margin-top:20px;font-size:22px;color:#00ffae;z-index:1;}
+.loader{display:none;border:5px solid rgba(255,255,255,0.2);border-top:5px solid #00ffae;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;margin-top:20px;}
+@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
+/* ===== CRUD ===== */
+/* Add inside <style> */
+#crudContainer /* Add inside <style> */
+#crudContainer {
+  position: relative;       /* important */
+  z-index: 10;              /* cards ke upar rahe */
+  background: rgba(0,0,0,0.3);
+  padding: 20px;
+  border-radius: 15px;
+  max-height: 400px;
+  overflow-y: auto;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+#crudContainer input #crudContainer input {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.05);
+  color: white;
+  font-size: 16px;
+  width: 90%;
+  outline: none;
+  z-index: 11;             /* make sure above background */
+}
+#crudContainer button{padding:10px 15px;margin:5px;border:none;border-radius:5px;cursor:pointer;background:#00ffae;color:black;font-weight:bold;transition:0.3s;}
+#crudContainer button:hover{background:#00ffaa;}
+table{margin-top:20px;background:white;color:black;border-collapse:collapse;width:80%;border-radius:10px;overflow:hidden;}
+td,th{padding:12px;border:1px solid #ddd;}
+th{background:#00ffae;color:black;}
+tr:nth-child(even){background:#f2f2f2;}
+.footer{position:absolute;bottom:20px;opacity:0.7;font-size:14px;}
+</style>
+</head>
+<body>
+
+<h1>🚀 Multi Database Server</h1>
+<div class="subtitle">Node.js Database Connectivity Dashboard</div>
+
+<div class="container">
+<div class="card" onclick="connectDB('MongoDB')"><div class="icon">🍃</div><div class="name">MongoDB</div></div>
+<div class="card" onclick="connectDB('MySQL')"><div class="icon">🐬</div><div class="name">MySQL</div></div>
+<div class="card" onclick="connectDB('SQLite')"><div class="icon">📦</div><div class="name">SQLite</div></div>
+</div>
+
+<div class="loader" id="loader"></div>
+<div id="status"></div>
+
+<div id="crudContainer">
+<input id="name" placeholder="Name">
+<input id="email" placeholder="Email">
+<div>
+<button onclick="addUser()">Add User</button>
+<button onclick="getUsers(selectedDB)">Show Users</button>
+</div>
+<table id="userTable"></table>
+</div>
+
+<div class="footer">Multi Database Node.js Project</div>
+
+<script>
+let selectedDB = null;
+
+function connectDB(db){
+    selectedDB = db;
+    document.getElementById("status").innerHTML = "";
+    document.getElementById("loader").style.display = "block";
+    setTimeout(function(){
+        document.getElementById("loader").style.display = "none";
+        document.getElementById("status").innerHTML = "✅ " + db + " Connected Successfully";
+    },1200);
+}
+
+function addUser(){
+    if(!selectedDB){ alert("Select a database!"); return; }
+    let name=document.getElementById("name").value;
+    let email=document.getElementById("email").value;
+    if(!name || !email){ alert("Fill all fields!"); return; }
+
+    fetch(`/addUser/${selectedDB}`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name,email})
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        alert(data.message);
+        document.getElementById("name").value="";
+        document.getElementById("email").value="";
+        getUsers(selectedDB);
+    });
+}
+
+function getUsers() {
+  fetch('/users')
+    .then(res => res.json())
+    .then(data => {
+      let table = "<tr><th>ID</th><th>Name</th><th>Email</th><th>Actions</th></tr>";
+      data.forEach(u => {
+        table += `<tr>
+          <td>${u.id}</td>
+          <td>${u.name}</td>
+          <td>${u.email}</td>
+          <td>
+            <button onclick="updateUser(${u.id})">Update</button>
+            <button onclick="deleteUser(${u.id})">Delete</button>
+          </td>
+        </tr>`;
+      });
+
+      let tableElement = document.getElementById("userTable");
+      tableElement.innerHTML = table;
+
+      // Scroll to the last row so new user is visible
+      if(data.length > 0){
+        let lastRow = tableElement.rows[tableElement.rows.length - 1];
+        lastRow.scrollIntoView({ behavior: "smooth", block: "end" });
+      }
+    });
+}
+
+function updateUser(id){
+    let name=prompt("Enter new name:");
+    let email=prompt("Enter new email:");
+    if(name && email){
+        fetch(`/updateUser/${id}`,{
+            method:'PUT',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({name,email})
+        }).then(res=>res.text()).then(data=>{
+            alert(data);
+            getUsers(selectedDB);
+        });
+    }
+}
+
+function deleteUser(id){
+    if(confirm("Are you sure to delete this user?")){
+        fetch(`/deleteUser/${id}`,{method:'DELETE'})
+        .then(res=>res.text())
+        .then(data=>{
+            alert(data);
+            getUsers(selectedDB);
+        });
+    }
+}
+</script>
+
+</body>
+</html>
